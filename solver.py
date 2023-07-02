@@ -7,32 +7,37 @@ class WordleSolver:
               words_list: typing.Optional[typing.List[str]],
               letters_dictionary: typing.Optional[typing.Dict]
               ) -> typing.Optional[typing.List[str]]:
-        updated_words_list = []
         if not words_list:
             raise ValueError
         words_list_for_loop = words_list.copy()
-        for word in words_list_for_loop:
-            for letter, value in letters_dictionary.items():
-                color, pos = value[0], value[1]
+        for letter, value in letters_dictionary.items():
+            color, pos = value[0], value[1]
+            for word in words_list_for_loop:
                 # Black
                 if color == 'b':
-                    if letter not in word:
-                        if word not in updated_words_list:
-                            updated_words_list.append(word)
-                    words_list = updated_words_list
-
-                #Green
-                elif color == 'g':
-                    if word[pos] == letter:
-                        if word not in updated_words_list:
-                            updated_words_list.append(word)
-                    words_list = updated_words_list
-
-                # Yellow
-                elif color == 'y':
                     if letter in word:
-                        if word[pos] != letter:
-                            if word not in updated_words_list:
-                                updated_words_list.append(word)
+                        if word in words_list:
+                            words_list.remove(word)
 
-        return updated_words_list
+        words_list_for_loop = words_list.copy()
+        for letter, value in letters_dictionary.items():
+            color, pos = value[0], value[1]
+            for word in words_list_for_loop:
+                # Green
+                if color == 'g':
+                    if word[pos] != letter:
+                        if word in words_list:
+                            words_list.remove(word)
+
+        words_list_for_loop = words_list.copy()
+        for letter, value in letters_dictionary.items():
+            color, pos = value[0], value[1]
+            for word in words_list_for_loop:
+                # Yellow
+                if color == 'y':
+                    if letter in word:
+                        if word[pos] == letter:
+                            if word in words_list:
+                                words_list.remove(word)
+
+        return words_list

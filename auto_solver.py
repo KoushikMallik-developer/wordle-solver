@@ -12,7 +12,7 @@ from solver import WordleSolver
 
 
 class AutoSolver:
-    FIRST_GUESS_WORD_LIST = ["TORES"]
+    FIRST_GUESS_WORD_LIST = ["TORES", "TARES", "SLATE"]
     TRY = 0
 
     def __init__(self):
@@ -22,6 +22,8 @@ class AutoSolver:
         self.start_game()
         with open("words_list.txt", 'r') as w:
             self.possible_words = [x.lower()[:-1] for x in w.readlines()]
+        self.cleanup_dataset()
+
 
     def solve_interface(self):
         inputs = self.get_input_boxes()
@@ -40,19 +42,10 @@ class AutoSolver:
             current_word = self.possible_words[0]
             result = self.solve(current_word, inputs)
             if result == {}:
-                for input in inputs:
-                    ActionChains(self.browser).move_to_element(input).send_keys(keys.Keys.BACKSPACE).perform()
+                for input_box in inputs:
+                    ActionChains(self.browser).move_to_element(input_box).send_keys(keys.Keys.BACKSPACE).perform()
                 self.possible_words.remove(current_word)
                 self.TRY -= 1
-
-
-
-
-
-
-        # ActionChains(browser).move_to_element(input1).send_keys("A").perform()
-        # ActionChains(browser).move_to_element(input1).send_keys(keys.Keys.RETURN).perform()
-        # input2 = browser.find_element(by=By.XPATH, value="/html/body/div/div/div[2]/div/div[1]/div/div[1]/div[2]/div")
 
     def solve(self, word, inputs) -> dict:
         word_char_list = list(word)
@@ -131,6 +124,16 @@ class AutoSolver:
                 elif color == "present":
                     result_dict[letter] = ["y", inputs.index(input_box)]
         return result_dict
+
+    def cleanup_dataset(self):
+        temp_words = self.possible_words
+        for word in self.possible_words:
+            for ascii_value in range(33, 65):
+                if chr(ascii_value) in word:
+                    if word in temp_words:
+                        temp_words.remove(word)
+        self.possible_words = temp_words
+
 
 if __name__ == "__main__":
     wordle_solver = AutoSolver()
