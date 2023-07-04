@@ -4,14 +4,11 @@ letter = 'a'
 position = 1
 word_list = []
 
-# Dictionary of possible words - 5 letter words
+# Dictionary of possible words - 5 letters words
 with open("words_list.txt") as w:
     possible_words = w.readlines()
-# print(possible_words)
-# print(len(possible_words))
-
 # Print introduction
-print("=== Welcome to Wordle Solver by David Razmadze! ===\n")
+print("=== Welcome to Wordle Solver by Koushik Mallik! ===\n")
 print("* THIS PROGRAM WILL NOT SOLVE THE WORDLE FOR YOU! *")
 print("Instead it will help you make a better guess by eliminating words that do not work.\n")
 print("Follow these steps:")

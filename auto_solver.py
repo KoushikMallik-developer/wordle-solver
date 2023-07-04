@@ -1,12 +1,11 @@
 import random
+import time
 
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common import keys
 from selenium.webdriver.common.by import By
-
-import time
 
 from solver import WordleSolver
 
@@ -31,16 +30,22 @@ class AutoSolver:
         random.shuffle(self.FIRST_GUESS_WORD_LIST)
         first_word = self.FIRST_GUESS_WORD_LIST[0]
         result = self.solve(first_word, inputs)
+        if result.get("is_ans_found", None):
+            print(f"Answer Found. Today's answer is: {first_word.upper()}")
+            return
 
         while len(self.possible_words) != 1:
+            if self.TRY == 6:
+                break
             inputs = self.get_input_boxes()
-            print(self.possible_words[:5])
             solutions = WordleSolver().solve(self.possible_words, result)
             if solutions:
                 self.possible_words = solutions
-            print(self.possible_words[:5])
             current_word = self.possible_words[0]
             result = self.solve(current_word, inputs)
+            if result.get("is_ans_found", None):
+                print(f"Answer Found. Today's answer is: {current_word.upper()}")
+                break
             if result == {}:
                 for input_box in inputs:
                     ActionChains(self.browser).move_to_element(input_box).send_keys(keys.Keys.BACKSPACE).perform()
@@ -59,10 +64,10 @@ class AutoSolver:
             25, 25+5
             """
             ActionChains(self.browser).move_to_element(inputs[i]).send_keys(word_char_list[i % 5]).perform()
-
-        ActionChains(self.browser).move_to_element(inputs[i]).send_keys(keys.Keys.RETURN).perform()
+            if i == 4:
+                ActionChains(self.browser).move_to_element(inputs[i]).send_keys(keys.Keys.RETURN).perform()
         self.TRY += 1
-        time.sleep(5)
+        time.sleep(3)
         return self.get_results(inputs)
 
     def open_browser(self, chrome_options):
@@ -93,11 +98,6 @@ class AutoSolver:
         inputs = []
 
         for i in range(1, 6):
-            print("/html/body/div/div/div[2]/div/div[1]/div/div["
-                  +str(self.TRY)
-                  +"]/div["
-                  + str(i)
-                  + "]/div")
             input_box = self.browser.find_element(by=By.XPATH,
                                                   value="/html/body/div/div/div[2]/div/div[1]/div/div["
                                                         + str(self.TRY+1)
@@ -112,10 +112,10 @@ class AutoSolver:
         result_dict = {}
         for input_box in inputs:
             color = input_box.get_attribute("aria-label")
-            print()
-            print(color)
-            print()
-            if len(color)>1:
+            if color == "empty":
+                result_dict["is_ans_found"] = True
+                return result_dict
+            if len(color) > 1:
                 letter, color = color.split()
                 if color == "absent":
                     result_dict[letter] = ["b", 0]
@@ -126,13 +126,13 @@ class AutoSolver:
         return result_dict
 
     def cleanup_dataset(self):
-        temp_words = self.possible_words
+        temp_words = self.possible_words.copy()
         for word in self.possible_words:
             for ascii_value in range(33, 65):
                 if chr(ascii_value) in word:
                     if word in temp_words:
                         temp_words.remove(word)
-        self.possible_words = temp_words
+        self.possible_words = temp_words.copy()
 
 
 if __name__ == "__main__":
